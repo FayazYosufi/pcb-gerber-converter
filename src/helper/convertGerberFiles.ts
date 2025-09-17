@@ -1,4 +1,3 @@
-// src/helper/convertGerberFiles.ts
 import { plot, read, renderLayers } from "@tracespace/core";
 import handleZipUpload from "./handleZipUpload";
 import type { RenderLayersResult } from "@tracespace/core";
@@ -8,5 +7,5 @@ export async function convertGerberFiles(fileList: FileList | null): Promise<Ren
   const files   = await handleZipUpload(fileList[0]);
   const readRes = await read(files);
   const plotRes = plot(readRes);
-  return renderLayers(plotRes);
+  return renderLayers(plotRes);   // ← entire map
 }

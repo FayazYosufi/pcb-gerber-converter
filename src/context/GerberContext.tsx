@@ -1,10 +1,16 @@
 // src/context/GerberContext.tsx
-import React, { createContext, useContext, useReducer, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useReducer,
+  ReactNode,
+} from "react";
 import { convertGerberFiles } from "../helper/convertGerberFiles";
 import type { RenderLayersResult } from "@tracespace/core";
 
+
 type State = {
-  layersMap: RenderLayersResult;
+  layersMap:  RenderLayersResult; // map id -> rendered layer
   loading: boolean;
   error: string | null;
 };
@@ -18,7 +24,7 @@ type Action =
 const EMPTY_LAYERS: RenderLayersResult = {
   layers: [],
   rendersById: {},
-  boardShapeRender: { viewBox: [0, 0, 0, 0] },
+  boardShapeRender: { viewBox: [0, 0, 0, 0] }, // ✅ only required field
 };
 
 const initialState: State = {
@@ -42,11 +48,19 @@ function gerberReducer(state: State, action: Action): State {
   }
 }
 
-type Ctx = { state: State; dispatch: React.Dispatch<Action>; loadGerbers: (f: FileList | null) => Promise<void> };
+/* ----------------- CONTEXT ----------------- */
+type Ctx = {
+  state: State;
+  dispatch: React.Dispatch<Action>;
+  loadGerbers: (files: FileList | null) => Promise<void>;
+};
+
 const GerberContext = createContext<Ctx | null>(null);
 
+/* ----------------- PROVIDER ----------------- */
 export const GerberProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(gerberReducer, initialState);
+
   const loadGerbers = async (files: FileList | null) => {
     if (!files) return;
     dispatch({ type: "LOAD_START" });
@@ -57,9 +71,15 @@ export const GerberProvider = ({ children }: { children: ReactNode }) => {
       dispatch({ type: "LOAD_ERROR", payload: err.message ?? "Failed to load" });
     }
   };
-  return <GerberContext.Provider value={{ state, dispatch, loadGerbers }}>{children}</GerberContext.Provider>;
+
+  return (
+    <GerberContext.Provider value={{ state, dispatch, loadGerbers }}>
+      {children}
+    </GerberContext.Provider>
+  );
 };
 
+/* ----------------- HOOK ----------------- */
 export const useGerber = () => {
   const ctx = useContext(GerberContext);
   if (!ctx) throw new Error("useGerber must be used within GerberProvider");

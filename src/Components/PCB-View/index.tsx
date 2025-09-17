@@ -1,7 +1,5 @@
-// src/Components/PCB-View/index.tsx
 import { useGerber } from "../../context/GerberContext";
-// import LayerToggler from "./LayerToggler";
-import LayerToggler from "./deepseek";
+import LayerToggler from "./LayerToggler.tsx";
 
 export default function ViewPCB() {
   const { state, loadGerbers } = useGerber();
@@ -14,9 +12,7 @@ export default function ViewPCB() {
       {state.error && <p style={{ color: "red" }}>{state.error}</p>}
       {state.loading && <p>Loading…</p>}
 
-      {/* <LayerToggler layersMap={state.layersMap} /> */}
-      {/* <LayerToggler files={Array.from(files)} /> */}
-      <LayerToggler layersMap={Array.from(state.layersMap)} />
+      <LayerToggler layersMap={state.layersMap} />
     </div>
   );
 }
