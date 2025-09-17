@@ -1,12 +1,33 @@
 // src/context/GerberContext.tsx
-import React, {
-  createContext,
-  useContext,
-  useReducer,
-  ReactNode,
-} from "react";
-import { convertGerberFiles } from "../helper/convertGerberFiles";
+import React, { createContext, useContext, useReducer, ReactNode, } from "react";
+import { plot, read, renderLayers } from "@tracespace/core";
+// import handleZipUpload from "./handleZipUpload";
+
+import JSZip from "jszip";
+
+async function handleZipUpload(file: File | null): Promise<File[]> {
+  if (!file) throw new Error("no file");
+  const zip = await JSZip.loadAsync(file);
+  return Promise.all(
+    Object.values(zip.files)
+      .filter((entry) => !entry.dir)
+      .map(async (entry) => {
+        const buf = await entry.async("arraybuffer");
+        const name = entry.name.split("/").pop() || "file";
+        return new File([buf], name, { type: "application/octet-stream" });
+      })
+  );
+}
+
 import type { RenderLayersResult } from "@tracespace/core";
+
+async function convertGerberFiles(fileList: FileList | null): Promise<RenderLayersResult> {
+  if (!fileList?.length) throw new Error("No file");
+  const files   = await handleZipUpload(fileList[0]);
+  const readRes = await read(files);
+  const plotRes = plot(readRes);
+  return renderLayers(plotRes);   // ← entire map
+}
 
 
 type State = {
