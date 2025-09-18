@@ -1,7 +1,5 @@
-// src/context/GerberContext.tsx
 import React, { createContext, useContext, useReducer, ReactNode, } from "react";
 import { plot, read, renderLayers } from "@tracespace/core";
-// import handleZipUpload from "./handleZipUpload";
 
 import JSZip from "jszip";
 
@@ -26,12 +24,12 @@ async function convertGerberFiles(fileList: FileList | null): Promise<RenderLaye
   const files   = await handleZipUpload(fileList[0]);
   const readRes = await read(files);
   const plotRes = plot(readRes);
-  return renderLayers(plotRes);   // ← entire map
+  return renderLayers(plotRes); 
 }
 
 
 type State = {
-  layersMap:  RenderLayersResult; // map id -> rendered layer
+  layersMap:  RenderLayersResult;
   loading: boolean;
   error: string | null;
 };
@@ -100,7 +98,7 @@ export const GerberProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-/* ----------------- HOOK ----------------- */
+
 export const useGerber = () => {
   const ctx = useContext(GerberContext);
   if (!ctx) throw new Error("useGerber must be used within GerberProvider");

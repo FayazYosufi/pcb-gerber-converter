@@ -1,0 +1,45 @@
+/* Basic tracespace-like default styles */
+.gerber-layer {
+  shape-rendering: geometricPrecision;
+}
+
+.copper.top {
+  fill: #c93;
+  stroke: #a71;
+}
+
+.copper.bottom {
+  fill: #393;
+  stroke: #171;
+}
+
+.silkscreen {
+  fill: #fff;
+  stroke: #ddd;
+}
+
+.soldermask.top {
+  fill: #0a0;
+  stroke: #080;
+}
+
+.soldermask.bottom {
+  fill: #a00;
+  stroke: #800;
+}
+
+.paste {
+  fill: #ccc;
+  stroke: #aaa;
+}
+
+.outline {
+  fill: none;
+  stroke: #00f;
+  stroke-width: 0.2;
+}
+
+.drill {
+  fill: #000;
+  stroke: none;
+}

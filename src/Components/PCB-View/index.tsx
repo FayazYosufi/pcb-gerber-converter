@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useGerber } from "../../context/GerberContext";
 import type { RenderLayersResult, Layer } from "@tracespace/core";
 import { toHtml } from "hast-util-to-html";
@@ -39,20 +39,25 @@ export function LayerToggler({ layersMap }: Props) {
 
   /* ------------- visibility state ------------- */
   const [activeSide, setActiveSide] = useState<'top' | 'bottom'>('top');
-  const [visible, setVisible] = useState<Record<string, boolean>>(() => {
-    const initialVisibility: Record<string, boolean> = {};
-    
-    layers.forEach(layer => {
-      // Show common layers and top layers by default
-      if (layer.type && COMMON_LAYER_TYPES.includes(layer.type) || layer.side === 'top') {
-        initialVisibility[layer.id] = true;
-      } else {
-        initialVisibility[layer.id] = false;
-      }
-    });
-    
-    return initialVisibility;
-  });
+  const [visible, setVisible] = useState<Record<string, boolean>>({});
+
+  // Initialize visibility when layers change
+  useEffect(() => {
+    if (layers.length > 0) {
+      const initialVisibility: Record<string, boolean> = {};
+      
+      layers.forEach(layer => {
+        // Show common layers, top layers, and copper layers by default
+        const isCommonLayer = layer.type && COMMON_LAYER_TYPES.includes(layer.type);
+        const isTopLayer = layer.side === 'top';
+        const isCopperLayer = layer.type === 'copper';
+        
+        initialVisibility[layer.id] = isCommonLayer || isTopLayer || isCopperLayer;
+      });
+      
+      setVisible(initialVisibility);
+    }
+  }, [layers]);
 
   /* ------------- helpers ------------- */
   const toggleOne = (id: string) =>
@@ -70,42 +75,41 @@ export function LayerToggler({ layersMap }: Props) {
   const switchSide = (side: 'top' | 'bottom') => {
     setActiveSide(side);
     
-    // Hide all layers first
-    const newVisibility: Record<string, boolean> = {};
-    layers.forEach(layer => {
-      newVisibility[layer.id] = false;
+    // Set new visibility based on the selected side, but preserve copper layer visibility
+    setVisible((prevVisible) => {
+      const newVisibility: Record<string, boolean> = {};
+      
+      layers.forEach(layer => {
+        if (layer.type && COMMON_LAYER_TYPES.includes(layer.type)) {
+          // Always show common layers
+          newVisibility[layer.id] = true;
+        } else if (layer.side === side) {
+          // For copper layers, always show them when switching to their side
+          if (layer.type === 'copper') {
+            newVisibility[layer.id] = true;
+          } else {
+            // For other layers on active side, show all except drawing and (for bottom) solderpaste
+            if (side === 'top') {
+              newVisibility[layer.id] = layer.type !== 'drawing';
+            } else {
+              newVisibility[layer.id] = layer.type !== 'drawing' && layer.type !== 'solderpaste';
+            }
+          }
+        } else {
+          // Hide layers from the inactive side
+          newVisibility[layer.id] = false;
+        }
+      });
+      
+      return newVisibility;
     });
-    
-    // Show common layers and the selected side's layers
-    layers.forEach(layer => {
-      if (layer.type && COMMON_LAYER_TYPES.includes(layer.type) || layer.side === side) {
-        newVisibility[layer.id] = true;
-      }
-    });
-    
-    setVisible(newVisibility);
   };
-
-  function colorFilliing(layer:any) {
-    if (layer.side == 'top') {
-      return '#cc9933'
-    }else if (layer.side == 'bottom' || layer.side == 'inner'){
-      return '#206b19'
-    }
-  }
 
   const renderSvg = (id: string) => {
     const svgContent = toHtml(JSON.parse(JSON.stringify(rendersById[id])));
     const layer = layers.find(l => l.id === id);
     const layerClass = `${layer?.type} ${layer?.side}` || '';
     
-    // const styledSvg = svgContent.replace(
-    //   '<svg',
-    //   `<svg 
-    //   fill=${colorFilliing(layer)} 
-    //   stroke=${ activeSide == 'top' ? '#cc9933' : '#1b5316ff'}
-    //   class="gerber-layer ${layerClass}"`
-    // );
     const styledSvg = svgContent.replace(
       '<svg',
       `<svg 
@@ -116,7 +120,9 @@ export function LayerToggler({ layersMap }: Props) {
       <div
         id="layer"
         key={id}
-        style={{border:'1px solid' ,position: "absolute", inset: 0, pointerEvents: "none" , width:'fit-content', height:'-webkit-fill-available'}}
+        style={{
+          position: "absolute", inset: 0, pointerEvents: "none" , 
+        }}
         dangerouslySetInnerHTML={{ __html: styledSvg }}
       />
     );
@@ -278,7 +284,7 @@ export default function ViewPCB() {
       {state.error && <p style={{ color: "red" }}>{state.error}</p>}
       {state.loading && <p>Loading…</p>}
 
-      <LayerToggler layersMap={state.layersMap} />
+      {state.layersMap.layers.length > 0 && <LayerToggler layersMap={state.layersMap} />}
     </div>
   );
 }
