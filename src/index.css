@@ -1,5 +1,10 @@
+:root{
+    --topBG: #cc9933;
+    --innerBG: #184913;
+    --bottomBG: #206b19;
+}
 #root{
-    background-color: gray;
+    background-color: rgb(204, 202, 202);
 }
 
 svg{
@@ -7,19 +12,13 @@ svg{
     height: 100%;
 }
 .board{
-    /* background-color: #206b19; */
-    background-color: #666666;
+    /* background-color: #206b19;
+    background-color: #666666; */
+}
+
+.gerber-layer{
+    box-sizing: border-box;
+    color: #666666;
+    /* fill: blue; */
 }
 /* Gerber layer color mapping */
-.gerber-layer.fr4       { fill: #666666; }  /* substrate */
-.gerber-layer.top.copper    { fill: #cc9933; stroke: #cc9933;}  /* copper traces / pads */
-.gerber-layer.bottom.copper    { fill: #206b19; stroke: #1a4c1a;}  /* copper traces / pads */
-/* .gerber-layer.cf        { fill: #cc9933; }  component-fabric (cutout) */
-.gerber-layer.top.soldermask{ fill: #999999;}
-/* .gerber-layer.bottom.soldermask{ fill: #206b19;} */
-.gerber-layer.silkscreen{ stroke: white; }
-.gerber-layer.paste     { fill: #ced8cd; }
-.gerber-layer.outline   { fill: #206b19; }  /* board outline / routing */
-
-.gerber-layer.top.solderpaste{ fill: #b41919; }
-.gerber-layer.bottom.solderpaste{ fill: #999999; }
