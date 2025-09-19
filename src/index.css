@@ -1,5 +1,7 @@
 :root{
-    --topBG: #cc9933;
+    /* --topBG: #cc9933; */
+    --topBG: #FFA500;
+    
     --innerBG: #184913;
     --bottomBG: #206b19;
 }

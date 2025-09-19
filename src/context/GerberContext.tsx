@@ -43,7 +43,7 @@ type Action =
 const EMPTY_LAYERS: RenderLayersResult = {
   layers: [],
   rendersById: {},
-  boardShapeRender: { viewBox: [0, 0, 0, 0] }, // ✅ only required field
+  boardShapeRender: { viewBox: [0, 0, 0, 0] }, // only required field
 };
 
 const initialState: State = {

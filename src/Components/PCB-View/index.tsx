@@ -13,7 +13,6 @@ const TOP_BOTTOM_LAYER_TYPES = ['copper', 'silkscreen', 'soldermask', 'paste'];
 
 export function LayerToggler({ layersMap }: Props) {
   const { layers, rendersById } = layersMap;
-  console.log(layersMap)
   
   /* ------------- categorize layers ------------- */
   const categorizedLayers = useMemo(() => {
@@ -22,18 +21,21 @@ export function LayerToggler({ layersMap }: Props) {
     const bottomLayers: Layer[] = [];
     
     layers.forEach(layer => {
-      if (layer.type && COMMON_LAYER_TYPES.includes(layer.type)) {
+      // Don't include copper layers in common layers
+      if (layer.type && COMMON_LAYER_TYPES.includes(layer.type) && layer.type !== 'copper') {
         commonLayers.push(layer);
       } else if (layer.side === 'top') {
         topLayers.push(layer);
       } else if (layer.side === 'bottom') {
         bottomLayers.push(layer);
       } else {
-        // Fallback for any unclassified layers
-        commonLayers.push(layer);
+        // Fallback for any unclassified layers (excluding copper)
+        if (layer.type !== 'copper') {
+          commonLayers.push(layer);
+        }
       }
     });
-    
+    console.log({ commonLayers, topLayers, bottomLayers });
     return { commonLayers, topLayers, bottomLayers };
   }, [layers]);
 
@@ -47,12 +49,11 @@ export function LayerToggler({ layersMap }: Props) {
       const initialVisibility: Record<string, boolean> = {};
       
       layers.forEach(layer => {
-        // Show common layers, top layers, and copper layers by default
-        const isCommonLayer = layer.type && COMMON_LAYER_TYPES.includes(layer.type);
+        const isCommonLayer = layer.type && COMMON_LAYER_TYPES.includes(layer.type) && layer.type !== 'copper';
         const isTopLayer = layer.side === 'top';
-        const isCopperLayer = layer.type === 'copper';
         
-        initialVisibility[layer.id] = isCommonLayer || isTopLayer || isCopperLayer;
+        // Show common layers and top layers by default
+        initialVisibility[layer.id] = isCommonLayer || isTopLayer;
       });
       
       setVisible(initialVisibility);
@@ -75,30 +76,16 @@ export function LayerToggler({ layersMap }: Props) {
   const switchSide = (side: 'top' | 'bottom') => {
     setActiveSide(side);
     
-    // Set new visibility based on the selected side, but preserve copper layer visibility
+    // Hide all layers first, then show only the active side and common layers
     setVisible((prevVisible) => {
       const newVisibility: Record<string, boolean> = {};
       
       layers.forEach(layer => {
-        if (layer.type && COMMON_LAYER_TYPES.includes(layer.type)) {
-          // Always show common layers
-          newVisibility[layer.id] = true;
-        } else if (layer.side === side) {
-          // For copper layers, always show them when switching to their side
-          if (layer.type === 'copper') {
-            newVisibility[layer.id] = true;
-          } else {
-            // For other layers on active side, show all except drawing and (for bottom) solderpaste
-            if (side === 'top') {
-              newVisibility[layer.id] = layer.type !== 'drawing';
-            } else {
-              newVisibility[layer.id] = layer.type !== 'drawing' && layer.type !== 'solderpaste';
-            }
-          }
-        } else {
-          // Hide layers from the inactive side
-          newVisibility[layer.id] = false;
-        }
+        const isCommonLayer = layer.type && COMMON_LAYER_TYPES.includes(layer.type) && layer.type !== 'copper';
+        const isActiveSideLayer = layer.side === side;
+        
+        // Show common layers and layers from active side
+        newVisibility[layer.id] = isCommonLayer || isActiveSideLayer;
       });
       
       return newVisibility;
@@ -108,20 +95,20 @@ export function LayerToggler({ layersMap }: Props) {
   const renderSvg = (id: string) => {
     const svgContent = toHtml(JSON.parse(JSON.stringify(rendersById[id])));
     const layer = layers.find(l => l.id === id);
-    const layerClass = `${layer?.type} ${layer?.side}` || '';
     
-    const styledSvg = svgContent.replace(
-      '<svg',
-      `<svg 
-      class="gerber-layer ${layerClass}"`
-    );
+    const layerClass = `${layer?.type || 'unknown'} ${layer?.side || 'common'}`;
+    
+    const styledSvg = svgContent
+      .replace('<svg', `<svg class="${layerClass}"`)
 
     return (
       <div
-        id="layer"
         key={id}
         style={{
-          position: "absolute", inset: 0, pointerEvents: "none" , 
+          position: "absolute",
+          inset: 0,
+          pointerEvents: "none",
+          opacity: 0.8
         }}
         dangerouslySetInnerHTML={{ __html: styledSvg }}
       />
@@ -130,144 +117,194 @@ export function LayerToggler({ layersMap }: Props) {
 
   /* ------------- UI ------------- */
   return (
-    <div style={{minHeight:'500px'}}>
-      {/* ---------- SIDE SELECTOR ---------- */}
-      <div style={{ marginBottom: 20 }}>
-        <button 
-          onClick={() => switchSide('top')}
-          style={{
-            padding: '8px 16px',
-            marginRight: 10,
-            backgroundColor: activeSide === 'top' ? '#007acc' : '#f0f0f0',
-            color: activeSide === 'top' ? 'white' : 'black',
-            border: '1px solid #ccc',
-            borderRadius: 4,
-            cursor: 'pointer'
-          }}
-        >
-          Top Side
-        </button>
-        <button 
-          onClick={() => switchSide('bottom')}
-          style={{
-            padding: '8px 16px',
-            backgroundColor: activeSide === 'bottom' ? '#007acc' : '#f0f0f0',
-            color: activeSide === 'bottom' ? 'white' : 'black',
-            border: '1px solid #ccc',
-            borderRadius: 4,
-            cursor: 'pointer'
-          }}
-        >
-          Bottom Side
-        </button>
+    <div style={{ 
+      display: 'flex', 
+      minHeight: '600px', 
+      gap: '20px',
+      fontFamily: 'Arial, sans-serif'
+    }}>
+      {/* ---------- SIDEBAR FOR LAYER SELECTION ---------- */}
+      <div style={{ 
+        width: '250px', 
+        backgroundColor: '#f5f5f5', 
+        padding: '16px',
+        borderRadius: '8px',
+        border: '1px solid #ddd'
+      }}>
+        {/* ---------- COMMON LAYERS ---------- */}
+        {categorizedLayers.commonLayers.length > 0 && (
+          <section style={{ marginBottom: '20px' }}>
+            <h3 style={{ 
+              margin: "0 0 12px 0", 
+              fontSize: '14px',
+              fontWeight: 'bold',
+              color: '#333'
+            }}>
+              Common Layers
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {categorizedLayers.commonLayers.map((l) => (
+                <label key={l.id} style={{ 
+                  display: 'flex', 
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                  padding: '6px 8px',
+                  borderRadius: '4px',
+                  backgroundColor: visible[l.id] ? '#e3f2fd' : 'transparent',
+                  transition: 'background-color 0.2s',
+                  // ':hover': {
+                  //   backgroundColor: '#f0f0f0'
+                  // }
+                }}>
+                  <input
+                    type="checkbox"
+                    checked={Boolean(visible[l.id])}
+                    onChange={() => toggleOne(l.id)}
+                    style={{ marginRight: '8px' }}
+                  />
+                  <span style={{ fontSize: '13px' }}>{l.type}</span>
+                </label>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ---------- TOP LAYERS ---------- */}
+        {activeSide === 'top' && categorizedLayers.topLayers.length > 0 && (
+          <section style={{ marginBottom: '20px' }}>
+            <h3 style={{ 
+              margin: "0 0 12px 0", 
+              fontSize: '14px',
+              fontWeight: 'bold',
+              color: '#333'
+            }}>
+              Top Layers
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {categorizedLayers.topLayers.map((l) => (
+                <label key={l.id} style={{ 
+                  display: 'flex', 
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                  padding: '6px 8px',
+                  borderRadius: '4px',
+                  backgroundColor: visible[l.id] ? '#e3f2fd' : 'transparent',
+                  transition: 'background-color 0.2s',
+                  // ':hover': {
+                  //   backgroundColor: '#f0f0f0'
+                  // }
+                }}>
+                  <input
+                    type="checkbox"
+                    checked={Boolean(visible[l.id])}
+                    onChange={() => toggleOne(l.id)}
+                    style={{ marginRight: '8px' }}
+                  />
+                  <span style={{ fontSize: '13px' }}>{l.type}</span>
+                </label>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ---------- BOTTOM LAYERS ---------- */}
+        {activeSide === 'bottom' && categorizedLayers.bottomLayers.length > 0 && (
+          <section style={{ marginBottom: '20px' }}>
+            <h3 style={{ 
+              margin: "0 0 12px 0", 
+              fontSize: '14px',
+              fontWeight: 'bold',
+              color: '#333'
+            }}>
+              Bottom Layers
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {categorizedLayers.bottomLayers.map((l) => (
+                <label key={l.id} style={{ 
+                  display: 'flex', 
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                  padding: '6px 8px',
+                  borderRadius: '4px',
+                  backgroundColor: visible[l.id] ? '#e3f2fd' : 'transparent',
+                  transition: 'background-color 0.2s',
+                  // ':hover': {
+                  //   backgroundColor: '#f0f0f0'
+                  // }
+                }}>
+                  <input
+                    type="checkbox"
+                    checked={Boolean(visible[l.id])}
+                    onChange={() => toggleOne(l.id)}
+                    style={{ marginRight: '8px' }}
+                  />
+                  <span style={{ fontSize: '13px' }}>{l.type}</span>
+                </label>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
 
-      {/* ---------- COMMON LAYERS ---------- */}
-      {categorizedLayers.commonLayers.length > 0 && (
-        <section style={{ marginBottom: 12 }}>
-          <h3 style={{ margin: "4px 0" }}>
-            <label>
-              <input
-                type="checkbox"
-                checked={categorizedLayers.commonLayers.every((l) => visible[l.id])}
-                ref={(el) => {
-                  if (!categorizedLayers.commonLayers.length || !el) return;
-                  el.indeterminate =
-                    !categorizedLayers.commonLayers.every((l) => visible[l.id]) &&
-                    !categorizedLayers.commonLayers.every((l) => !visible[l.id]);
-                }}
-                onChange={() => toggleGroup(categorizedLayers.commonLayers)}
-              />
-              {" Common Layers"}
-            </label>
-          </h3>
-          <div style={{ paddingLeft: 16 }}>
-            {categorizedLayers.commonLayers.map((l) => (
-              <label key={l.id} style={{ marginRight: 10, display: 'block' }}>
-                <input
-                  type="checkbox"
-                  checked={Boolean(visible[l.id])}
-                  onChange={() => toggleOne(l.id)}
-                />
-                {l.type}
-              </label>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* ---------- ACTIVE SIDE LAYERS ---------- */}
-      {activeSide === 'top' && categorizedLayers.topLayers.length > 0 && (
-        <section style={{ marginBottom: 12 }}>
-          <h3 style={{ margin: "4px 0" }}>
-            <label>
-              <input
-                type="checkbox"
-                checked={categorizedLayers.topLayers.every((l) => visible[l.id])}
-                ref={(el) => {
-                  if (!categorizedLayers.topLayers.length || !el) return;
-                  el.indeterminate =
-                    !categorizedLayers.topLayers.every((l) => visible[l.id]) &&
-                    !categorizedLayers.topLayers.every((l) => !visible[l.id]);
-                }}
-                onChange={() => toggleGroup(categorizedLayers.topLayers)}
-              />
-              {" Top Side Layers"}
-            </label>
-          </h3>
-          <div style={{ paddingLeft: 16 }}>
-            {categorizedLayers.topLayers.map((l) => (
-              <label key={l.id} style={{ marginRight: 10, display: 'block' }}>
-                <input
-                  type="checkbox"
-                  checked={Boolean(visible[l.id])}
-                  onChange={() => toggleOne(l.id)}
-                />
-                {l.type}
-              </label>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {activeSide === 'bottom' && categorizedLayers.bottomLayers.length > 0 && (
-        <section style={{ marginBottom: 12 }}>
-          <h3 style={{ margin: "4px 0" }}>
-            <label>
-              <input
-                type="checkbox"
-                checked={categorizedLayers.bottomLayers.every((l) => visible[l.id])}
-                ref={(el) => {
-                  if (!categorizedLayers.bottomLayers.length || !el) return;
-                  el.indeterminate =
-                    !categorizedLayers.bottomLayers.every((l) => visible[l.id]) &&
-                    !categorizedLayers.bottomLayers.every((l) => !visible[l.id]);
-                }}
-                onChange={() => toggleGroup(categorizedLayers.bottomLayers)}
-              />
-              {" Bottom Side Layers"}
-            </label>
-          </h3>
-          <div style={{ paddingLeft: 16 }}>
-            {categorizedLayers.bottomLayers.map((l) => (
-              <label key={l.id} style={{ marginRight: 10, display: 'block' }}>
-                <input
-                  type="checkbox"
-                  checked={Boolean(visible[l.id])}
-                  onChange={() => toggleOne(l.id)}
-                />
-                {l.type}
-              </label>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* ---------- CANVAS ---------- */}
-      <div style={{ position: "relative", minHeight: 500, marginTop: 20,  
-        transform: activeSide === 'bottom' ? 'rotate(180deg)' : 'none' 
+      {/* ---------- MAIN CONTENT AREA ---------- */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        {/* ---------- SIDE SELECTOR (above PCB) ---------- */}
+        <div style={{ 
+          marginBottom: '20px', 
+          display: 'flex', 
+          gap: '10px',
+          justifyContent: 'center'
         }}>
-        {layers.map((l) => visible[l.id] && renderSvg(l.id))}
+          <button 
+            onClick={() => switchSide('top')}
+            style={{
+              padding: '12px 24px',
+              backgroundColor: activeSide === 'top' ? '#007acc' : '#6c757d',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              fontSize: '14px',
+              transition: 'background-color 0.2s',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+            }}
+          >
+            Top Side
+          </button>
+          <button 
+            onClick={() => switchSide('bottom')}
+            style={{
+              padding: '12px 24px',
+              backgroundColor: activeSide === 'bottom' ? '#28a745' : '#6c757d',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              fontSize: '14px',
+              transition: 'background-color 0.2s',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+            }}
+          >
+            Bottom Side
+          </button>
+        </div>
+
+        {/* ---------- CANVAS ---------- */}
+        <div style={{ 
+          position: "relative", 
+          flex: 1,
+          minHeight: '500px', 
+          transform: activeSide === 'bottom' ? 'rotate(180deg)' : 'none',
+          backgroundColor: activeSide === 'top' ? '#000000' : '#0b2708', // Black for top, green for bottom
+          border: '2px solid #ddd',
+          borderRadius: '8px',
+          overflow: 'hidden',
+          boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+        }}>
+          {layers.map((l) => visible[l.id] && renderSvg(l.id))}
+        </div>
       </div>
     </div>
   );
@@ -277,9 +314,14 @@ export default function ViewPCB() {
   const { state, loadGerbers } = useGerber();
 
   return (
-    <div style={{ padding: 20 }}>
-      <h2>Upload PCB ZIP</h2>
-      <input type="file" accept=".zip" onChange={(e) => loadGerbers(e.target.files)} />
+    <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
+      <h2 style={{ marginBottom: '20px', color: '#333' }}>Upload PCB ZIP</h2>
+      <input 
+        type="file" 
+        accept=".zip" 
+        onChange={(e) => loadGerbers(e.target.files)}
+        style={{ marginBottom: '20px' }}
+      />
 
       {state.error && <p style={{ color: "red" }}>{state.error}</p>}
       {state.loading && <p>Loading…</p>}
