@@ -8,18 +8,18 @@
 
 .copper.top { fill: var(--topBG); stroke: #aa7711; }
 .copper.bottom { fill: var(--innerBG); stroke: #1b5316; }
-.copper.inner { fill: #284725; stroke: #286123; }
+/* .copper.inner { fill: #284725; stroke: #286123; } */
 
 /* Silkscreen */
 .silkscreen.top { fill: #ffffff; stroke: #dddddd;  stroke-width: 0.1}
 .silkscreen.bottom { fill: #ffffff; stroke: #dddddd;  stroke-width: 0.1}
 
 /* Soldermask */
-.soldermask.top { fill: #9c9c5f; stroke: #9c9c5f; }
-.soldermask.bottom { fill: #677d2c; stroke: #9c9c5f; }
+/* .soldermask.top { fill: #9c9c5f; stroke: #9c9c5f; } */
+.soldermask.bottom { fill: transparent; stroke: transparent; }
 
 /* Solderpaste */
-.paste, .Solderpaste { fill: transparent; stroke: transparent; }
+.paste, .Solderpaste { fill: blue; stroke: blue; }
 
 /* Board outline */
 .outline { fill: none; stroke:black; stroke-width: 0.2; }

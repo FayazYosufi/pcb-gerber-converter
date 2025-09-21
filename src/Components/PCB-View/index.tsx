@@ -297,7 +297,7 @@ export function LayerToggler({ layersMap }: Props) {
           flex: 1,
           minHeight: '500px', 
           transform: activeSide === 'bottom' ? 'rotate(180deg)' : 'none',
-          backgroundColor: activeSide === 'top' ? '#000000' : '#0b2708', // Black for top, green for bottom
+          backgroundColor: activeSide === 'top' ? 'rgb(102 102 102)' : '#0b2708', // Black for top, green for bottom
           border: '2px solid #ddd',
           borderRadius: '8px',
           overflow: 'hidden',

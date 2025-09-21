@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useReducer, ReactNode, } from "react";
 import { plot, read, renderLayers } from "@tracespace/core";
+import type { RenderLayersResult } from "@tracespace/core";
+
 
 import JSZip from "jszip";
 
@@ -17,13 +19,13 @@ async function handleZipUpload(file: File | null): Promise<File[]> {
   );
 }
 
-import type { RenderLayersResult } from "@tracespace/core";
 
 async function convertGerberFiles(fileList: FileList | null): Promise<RenderLayersResult> {
   if (!fileList?.length) throw new Error("No file");
   const files   = await handleZipUpload(fileList[0]);
   const readRes = await read(files);
   const plotRes = plot(readRes);
+  // return renderLayers(plotRes); 
   return renderLayers(plotRes); 
 }
 
