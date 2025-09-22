@@ -103,8 +103,16 @@ export function LayerToggler({ layersMap }: Props) {
 
     return (
       <div
+      id="layer"
         key={id}
         style={{
+          // width:'100%',
+          // minWidth:'400px',
+          // minHeight:'400px',
+          // width:'-webkit-fill-available',
+          // height:'-webkit-fill-available',
+          width:'fit-content',
+          // height:'fit-content',
           position: "absolute",
           inset: 0,
           pointerEvents: "none",
@@ -292,16 +300,19 @@ export function LayerToggler({ layersMap }: Props) {
         </div>
 
         {/* ---------- CANVAS ---------- */}
-        <div style={{ 
+        <div id="canvas" style={{ 
           position: "relative", 
-          flex: 1,
-          minHeight: '500px', 
+          // flex: 1,
+
+          minHeight: '450px', 
+          // minWidth:'fit-content',
+          minWidth:'710px',
+          width:'fit-content',
+          // height:'200px',
           transform: activeSide === 'bottom' ? 'rotate(180deg)' : 'none',
-          backgroundColor: activeSide === 'top' ? 'rgb(102 102 102)' : '#0b2708', // Black for top, green for bottom
-          border: '2px solid #ddd',
-          borderRadius: '8px',
-          overflow: 'hidden',
-          boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+          backgroundColor: activeSide === 'top' ? '#666' : '#0b2708', // Black for top, green for bottom
+          // overflow: 'hidden',
+          // boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
         }}>
           {layers.map((l) => visible[l.id] && renderSvg(l.id))}
         </div>

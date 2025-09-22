@@ -6,11 +6,11 @@
     --bottomBG: #206b19;
 }
 #root{
-    background-color: rgb(204, 202, 202);
+    height: 99vh;
+    /* background-color: rgb(72, 40, 78); */
 }
-
 svg{
-    width: 100%;
+    width: max-content;
     height: 100%;
 }
 .board{

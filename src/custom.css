@@ -10,16 +10,13 @@
 .copper.bottom { fill: var(--innerBG); stroke: #1b5316; }
 /* .copper.inner { fill: #284725; stroke: #286123; } */
 
-/* Silkscreen */
 .silkscreen.top { fill: #ffffff; stroke: #dddddd;  stroke-width: 0.1}
 .silkscreen.bottom { fill: #ffffff; stroke: #dddddd;  stroke-width: 0.1}
 
-/* Soldermask */
-/* .soldermask.top { fill: #9c9c5f; stroke: #9c9c5f; } */
-.soldermask.bottom { fill: transparent; stroke: transparent; }
+/* .soldermask.bottom { fill: rgb(209, 59, 59); } */
+.soldermask { fill: #a09a8e; }
 
-/* Solderpaste */
-.paste, .Solderpaste { fill: blue; stroke: blue; }
+.paste, .solderpaste { fill: #a09a8e; }
 
 /* Board outline */
 .outline { fill: none; stroke:black; stroke-width: 0.2; }
@@ -27,8 +24,4 @@
 /* Drill holes */
 .drill { fill: white; stroke: none; }
 
-.gerber-layer.drawing{ fill: #999999; stroke: red; }
-
-#convas{
-    background-color: #0b2708;
-}
+.drawing{ fill: gray; stroke: blue; }
