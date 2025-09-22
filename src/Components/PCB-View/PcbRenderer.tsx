@@ -50,7 +50,7 @@ export default function PCBView({ layersMap, visible, activeSide, setActiveSide,
     return (
       <div
         key={id}
-        className="absolute inset-0 pointer-events-none opacity-80"
+        className="absolute inset-0 pointer-events-none opacity-80 w-fit"
         dangerouslySetInnerHTML={{ __html: svgContent }}
       />
     );
@@ -80,9 +80,9 @@ export default function PCBView({ layersMap, visible, activeSide, setActiveSide,
 
       {/* Canvas */}
       <div
-        className={`relative min-h-[450px] min-w-[710px] ${
+        className={`relative min-h-[450px] min-w-[710px] w-fit ${
           activeSide === 'bottom' ? 'rotate-180' : ''
-        } ${activeSide === 'top' ? 'bg-gray-600' : 'bg-green-900'}`}
+        } ${activeSide === 'top' ? 'bg-[#464646]' : 'bg-[#184913]'}`}
       >
         {layers.map(l => visible[l.id] && renderSvg(l.id))}
       </div>
