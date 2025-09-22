@@ -2,13 +2,13 @@
     /* --topBG: #cc9933; */
     --topBG: #FFA500;
 
-    --innerBG: #184913;
-    --bottomBG: #206b19;
+    --innerBG: #1a4c1a;
+    --bottomBG: #336533;
 }
 
 .copper.top { fill: var(--topBG); stroke: #aa7711; }
 .copper.bottom { fill: var(--innerBG); stroke: #1b5316; }
-/* .copper.inner { fill: #284725; stroke: #286123; } */
+.copper.inner { fill: var(--innerBG); stroke: #286123; }
 
 .silkscreen.top { fill: #ffffff; stroke: #dddddd;  stroke-width: 0.1}
 .silkscreen.bottom { fill: #ffffff; stroke: #dddddd;  stroke-width: 0.1}

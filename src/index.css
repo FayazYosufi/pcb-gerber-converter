@@ -1,3 +1,7 @@
+@import "tailwindcss";
+
+
+
 :root{
     /* --topBG: #cc9933; */
     --topBG: #FFA500;
@@ -7,7 +11,7 @@
 }
 #root{
     height: 99vh;
-    /* background-color: rgb(72, 40, 78); */
+    background-color: rgb(72, 40, 78);
 }
 svg{
     width: max-content;
