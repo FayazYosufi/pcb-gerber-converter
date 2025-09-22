@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer } from "react";
-import { plot, read, renderLayers, stringifySvg } from "@tracespace/core";
+import { plot, read, renderLayers } from "@tracespace/core";
 import type { RenderLayersResult } from "@tracespace/core";
 import JSZip from "jszip";
 

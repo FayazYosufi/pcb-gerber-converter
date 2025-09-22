@@ -1,4 +1,4 @@
-import ViewPCB from './Components/PCB-View'
+import ViewPCB from './Components/PCB'
 import { GerberProvider } from './context/GerberContext'
 
 

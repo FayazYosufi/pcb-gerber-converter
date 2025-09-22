@@ -12,7 +12,7 @@ interface PCBViewProps {
   setVisible: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
 }
 
-export default function PCBView({ layersMap, visible, activeSide, setActiveSide, setVisible }: PCBViewProps) {
+export default function PcbRenderer({ layersMap, visible, activeSide, setActiveSide, setVisible }: PCBViewProps) {
   const { layers, rendersById } = layersMap;
 
   useEffect(() => {

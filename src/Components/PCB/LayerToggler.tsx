@@ -7,10 +7,10 @@ interface SidebarProps {
   layersMap: RenderLayersResult;
   visible: Record<string, boolean>;
   setVisible: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
-  activeSide: 'top' | 'bottom';
+  activeSide?: 'top' | 'bottom';
 }
 
-export default function Sidebar({ layersMap, visible, setVisible, activeSide }: SidebarProps) {
+export default function LayerToggler({ layersMap, visible, setVisible }: SidebarProps) {
   const { layers } = layersMap;
 
   const categorizedLayers = useMemo(() => {
