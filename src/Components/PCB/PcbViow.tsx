@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { RenderLayersResult } from "@tracespace/core";
 import LayerToggler from "./LayerToggler";
-import PcbRenderer from "./PcbRenderer";
+import RenderPcbLayers from "./RenderPcbLayers";
 
 interface Props {
   layersMap: RenderLayersResult;
@@ -20,7 +20,7 @@ export default function PcbVieow({ layersMap }: Props) {
         setVisible={setVisible}
       />
       
-      <PcbRenderer
+      <RenderPcbLayers
         layersMap={layersMap}
         visible={visible}
         activeSide={activeSide}

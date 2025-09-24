@@ -1,13 +1,93 @@
 import { useMemo } from "react";
 import type { RenderLayersResult, Layer } from "@tracespace/core";
+import { Eye, EyeOff } from "lucide-react";
 
 const COMMON_LAYER_TYPES = ['outline', 'drill'];
+
+// Array of background colors for eye icons
+// Array of bold background colors for eye icons
+// Array of bold darker background colors for eye icons
+const EYE_BG_COLORS = [
+  'bg-blue-400',
+  'bg-green-400',
+  'bg-red-400',
+  'bg-purple-400',
+];
 
 interface SidebarProps {
   layersMap: RenderLayersResult;
   visible: Record<string, boolean>;
   setVisible: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
   activeSide?: 'top' | 'bottom';
+}
+
+interface LayerToggleItemProps {
+  layer: Layer;
+  isVisible: boolean;
+  onToggle: (id: string) => void;
+  label?: string;
+  colorIndex: number;
+}
+
+interface LayerSectionProps {
+  title: string;
+  layers: Layer[];
+  visible: Record<string, boolean>;
+  onToggle: (id: string) => void;
+  getLabel?: (layer: Layer) => string;
+  startColorIndex: number;
+}
+
+// Reusable toggle item component
+function LayerToggleItem({ layer, isVisible, onToggle, label, colorIndex }: LayerToggleItemProps) {
+  const eyeBgColor = EYE_BG_COLORS[colorIndex % EYE_BG_COLORS.length];
+
+  return (
+    <div
+      className="flex items-center justify-between rounded-md  overflow-hidden cursor-pointer hover:bg-gray-200 group min-h-[32px]"
+      onClick={() => onToggle(layer.id)}
+    >
+      <span className="text-sm text-gray-700">{label || layer.type}</span>
+      <button
+        type="button"
+        className={`p-1 ${eyeBgColor}`}
+        aria-label={isVisible ? "Hide layer" : "Show layer"}
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggle(layer.id);
+        }}
+      >
+        {isVisible ? (
+          <Eye className="h-3.5 w-3.5 " />
+        ) : (
+          <EyeOff className="h-3.5 w-3.5 " />
+        )}
+      </button>
+    </div>
+  );
+}
+
+// Reusable section component
+function LayerSection({ title, layers, visible, onToggle, getLabel, startColorIndex }: LayerSectionProps) {
+  if (layers.length === 0) return null;
+
+  return (
+    <section className="mb-4">
+      <h3 className="m-0 mb-2 text-xs font-bold text-black uppercase tracking-wide">{title}</h3>
+      <div className="flex flex-col gap-1">
+        {layers.map((layer, index) => (
+          <LayerToggleItem
+            key={layer.id}
+            layer={layer}
+            isVisible={!!visible[layer.id]}
+            onToggle={onToggle}
+            label={getLabel ? getLabel(layer) : undefined}
+            colorIndex={startColorIndex + index}
+          />
+        ))}
+      </div>
+    </section>
+  );
 }
 
 export default function LayerToggler({ layersMap, visible, setVisible }: SidebarProps) {
@@ -39,131 +119,46 @@ export default function LayerToggler({ layersMap, visible, setVisible }: Sidebar
     setVisible(v => ({ ...v, [id]: !v[id] }));
   };
 
+  // Calculate starting color indices for each section
+  let colorIndex = 0;
+
   return (
-    <div className="w-64 bg-gray-100 p-4 rounded-lg border border-gray-300">
-      {/* Common Layers */}
-      {categorizedLayers.common.length > 0 && (
-        <section className="mb-5">
-          <h3 className="m-0 mb-3 text-sm font-bold text-gray-800">Common Layers</h3>
-          <div className="flex flex-col gap-2">
-            {categorizedLayers.common.map(l => (
-              <label
-                key={l.id}
-                className="flex items-center justify-between px-2 py-1.5 rounded cursor-pointer transition-colors hover:bg-gray-200 group"
-              >
-                <span className="text-sm text-gray-700">{l.type}</span>
-                <div className="relative inline-flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={!!visible[l.id]}
-                    onChange={() => toggleOne(l.id)}
-                    className="sr-only"
-                  />
-                  <div className={`w-10 h-5 rounded-full transition-colors ${
-                    visible[l.id] ? 'bg-blue-600' : 'bg-gray-300'
-                  }`} />
-                  <div className={`absolute left-0.5 top-0.5 bg-white border border-gray-300 rounded-full h-4 w-4 transition-transform ${
-                    visible[l.id] ? 'transform translate-x-5' : ''
-                  }`} />
-                </div>
-              </label>
-            ))}
-          </div>
-        </section>
-      )}
+    <div className="w-56 bg-gray-50 p-3 border border-gray-200 text-xs">
+      <LayerSection
+        title="Common Layers"
+        layers={categorizedLayers.common}
+        visible={visible}
+        onToggle={toggleOne}
+        startColorIndex={colorIndex}
+      />
+      {colorIndex += categorizedLayers.common.length}
 
-      {/* Inner Layers */}
-      {categorizedLayers.inner.length > 0 && (
-        <section className="mb-5">
-          <h3 className="m-0 mb-3 text-sm font-bold text-gray-800">Inner Layers</h3>
-          <div className="flex flex-col gap-2">
-            {categorizedLayers.inner.map(l => (
-              <label
-                key={l.id}
-                className="flex items-center justify-between px-2 py-1.5 rounded cursor-pointer transition-colors hover:bg-gray-200 group"
-              >
-                <span className="text-sm text-gray-700">Inner</span>
-                <div className="relative inline-flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={!!visible[l.id]}
-                    onChange={() => toggleOne(l.id)}
-                    className="sr-only"
-                  />
-                  <div className={`w-10 h-5 rounded-full transition-colors ${
-                    visible[l.id] ? 'bg-blue-600' : 'bg-gray-300'
-                  }`} />
-                  <div className={`absolute left-0.5 top-0.5 bg-white border border-gray-300 rounded-full h-4 w-4 transition-transform ${
-                    visible[l.id] ? 'transform translate-x-5' : ''
-                  }`} />
-                </div>
-              </label>
-            ))}
-          </div>
-        </section>
-      )}
+      <LayerSection
+        title="Inner Layers"
+        layers={categorizedLayers.inner}
+        visible={visible}
+        onToggle={toggleOne}
+        getLabel={() => "Inner"}
+        startColorIndex={colorIndex}
+      />
+      {colorIndex += categorizedLayers.inner.length}
 
-      {/* Top Layers */}
-      {categorizedLayers.top.length > 0 && (
-        <section className="mb-5">
-          <h3 className="m-0 mb-3 text-sm font-bold text-gray-800">Top Layers</h3>
-          <div className="flex flex-col gap-2">
-            {categorizedLayers.top.map(l => (
-              <label
-                key={l.id}
-                className="flex items-center justify-between px-2 py-1.5 rounded cursor-pointer transition-colors hover:bg-gray-200 group"
-              >
-                <span className="text-sm text-gray-700">{l.type}</span>
-                <div className="relative inline-flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={!!visible[l.id]}
-                    onChange={() => toggleOne(l.id)}
-                    className="sr-only"
-                  />
-                  <div className={`w-10 h-5 rounded-full transition-colors ${
-                    visible[l.id] ? 'bg-blue-600' : 'bg-gray-300'
-                  }`} />
-                  <div className={`absolute left-0.5 top-0.5 bg-white border border-gray-300 rounded-full h-4 w-4 transition-transform ${
-                    visible[l.id] ? 'transform translate-x-5' : ''
-                  }`} />
-                </div>
-              </label>
-            ))}
-          </div>
-        </section>
-      )}
+      <LayerSection
+        title="Top Layers"
+        layers={categorizedLayers.top}
+        visible={visible}
+        onToggle={toggleOne}
+        startColorIndex={colorIndex}
+      />
+      {colorIndex += categorizedLayers.top.length}
 
-      {/* Bottom Layers */}
-      {categorizedLayers.bottom.length > 0 && (
-        <section className="mb-5">
-          <h3 className="m-0 mb-3 text-sm font-bold text-gray-800">Bottom Layers</h3>
-          <div className="flex flex-col gap-2">
-            {categorizedLayers.bottom.map(l => (
-              <label
-                key={l.id}
-                className="flex items-center justify-between px-2 py-1.5 rounded cursor-pointer transition-colors hover:bg-gray-200 group"
-              >
-                <span className="text-sm text-gray-700">{l.type}</span>
-                <div className="relative inline-flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={!!visible[l.id]}
-                    onChange={() => toggleOne(l.id)}
-                    className="sr-only"
-                  />
-                  <div className={`w-10 h-5 rounded-full transition-colors ${
-                    visible[l.id] ? 'bg-blue-600' : 'bg-gray-300'
-                  }`} />
-                  <div className={`absolute left-0.5 top-0.5 bg-white border border-gray-300 rounded-full h-4 w-4 transition-transform ${
-                    visible[l.id] ? 'transform translate-x-5' : ''
-                  }`} />
-                </div>
-              </label>
-            ))}
-          </div>
-        </section>
-      )}
+      <LayerSection
+        title="Bottom Layers"
+        layers={categorizedLayers.bottom}
+        visible={visible}
+        onToggle={toggleOne}
+        startColorIndex={colorIndex}
+      />
     </div>
   );
 }

@@ -12,7 +12,9 @@ interface PCBViewProps {
   setVisible: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
 }
 
-export default function PcbRenderer({ layersMap, visible, activeSide, setActiveSide, setVisible }: PCBViewProps) {
+
+
+export default function RenderPcbLayers({ layersMap, visible, activeSide, setActiveSide, setVisible }: PCBViewProps) {
   const { layers, rendersById } = layersMap;
 
   useEffect(() => {
@@ -38,19 +40,24 @@ export default function PcbRenderer({ layersMap, visible, activeSide, setActiveS
     });
   };
 
+  let index = 1;
+
   const renderSvg = (id: string) => {
-    const layer = layers.find(l => l.id === id);
-    const layerClass = `${layer?.type || 'unknown'} ${layer?.side || 'common'}`;
+    const layer = layers.find(l => l.id === id,);
+
+    const layerClass = `${layer?.type || 'unknown'} ${layer?.side || 'common'} in${index}`;
+    
     let svgContent = stringifySvg(rendersById[id]).replace('<svg', `<svg class="${layerClass}"`);
     
     if (layer?.type === 'silkscreen' && layer?.side === 'bottom') {
       svgContent = svgContent.replace('<svg', `<svg style="transform: rotate(0deg)"`);
     }
+    index++
 
     return (
       <div
         key={id}
-        className="absolute inset-0 pointer-events-none opacity-80 w-fit"
+        className="absolute inset-0 pointer-events-none w-fit"
         dangerouslySetInnerHTML={{ __html: svgContent }}
       />
     );
@@ -80,11 +87,14 @@ export default function PcbRenderer({ layersMap, visible, activeSide, setActiveS
 
       {/* Canvas */}
       <div
-        className={`relative min-h-[450px] min-w-[710px] w-fit ${
+        className={`relative min-h-[450px] min-w-[710px] w-fit bg-[#184913] ${
           activeSide === 'bottom' ? 'rotate-180' : ''
-        } ${activeSide === 'top' ? 'bg-[#464646]' : 'bg-[#184913]'}`}
+        }
+        `
+      }
+      // ${activeSide === 'top' ? 'bg-[#464646]' : 'bg-[#184913]'}
       >
-        {layers.map(l => visible[l.id] && renderSvg(l.id))}
+        {layers.map((l) => visible[l.id] && renderSvg(l.id,))}
       </div>
     </div>
   );

@@ -2,21 +2,11 @@
 
 
 
-:root{
-    /* --topBG: #cc9933; */
-    --topBG: #FFA500;
-    
-    --innerBG: #184913;
-    --bottomBG: #206b19;
-}
 #root{
     height: 99vh;
-    /* background-color: rgb(72, 40, 78); */
+    /* background-color: rgb(23, 22, 24); */
 }
-svg{
-    width: max-content;
-    height: 100%;
-}
+
 .board{
     /* background-color: #206b19;
     background-color: #666666; */

@@ -1,4 +1,4 @@
-import { useGerber } from "../../context/GerberContext";
+import { useGerber } from "./GerberContext";
 import PcbVieow from "./PcbViow";
 
 export default function PcbWindow() {

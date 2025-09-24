@@ -2,21 +2,37 @@
     /* --topBG: #cc9933; */
     --topBG: #FFA500;
 
-    --innerBG: #1a4c1a;
-    --bottomBG: #336533;
+    --innerBG: red;
+    --bottomBG: #165316;
+
+}
+svg{
+    width: 100%;
+    height: 100%;
 }
 
-.copper.top { fill: var(--topBG); stroke: #aa7711; }
-.copper.bottom { fill: var(--innerBG); stroke: #1b5316; }
-.copper.inner { fill: var(--innerBG); stroke: #286123; }
+.gerber-layer, svg {
+  /* shape-rendering: geometricPrecision; */
+  opacity: 0.6;
+}
 
-.silkscreen.top { fill: #ffffff; stroke: #dddddd;  stroke-width: 0.1}
-.silkscreen.bottom { fill: #ffffff; stroke: #dddddd;  stroke-width: 0.1}
+.copper.top { fill: var(--bottomBG); stroke: #296d23; opacity: .4;}
+/* .copper.top { fill: var(--topBG); stroke: #FFA500; } */
+.copper.bottom { fill: var(--bottomBG); stroke: #207a17; opacity: .4;}
+
+.copper.inner { fill: var(--innerBG); stroke: yellow; }
+.copper.inner.in1 { fill: blue; stroke: blue; }
+.copper.inner.in2 { fill: orange; stroke: orange; }
+.copper.inner.in3 { fill: red; stroke: rgb(234, 0, 255); }
+.copper.inner.in4 { fill: greenyellow; stroke: greenyellow; }
+
+.silkscreen { fill: #ffffff; stroke: #dddddd; stroke-width: 0.5; opacity: 0.9;}
+/* .silkscreen.bottom { fill: #ffffff; stroke: #dddddd;  stroke-width: 0.1} */
 
 /* .soldermask.bottom { fill: rgb(209, 59, 59); } */
 .soldermask { fill: #a09a8e; }
 
-.paste, .solderpaste { fill: #a09a8e; }
+.paste, .solderpaste { fill: #8ea090; }
 
 /* Board outline */
 .outline { fill: none; stroke:black; stroke-width: 0.2; }
